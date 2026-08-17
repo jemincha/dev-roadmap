@@ -2,7 +2,7 @@ const movieInput = document.getElementById("movie-input");
 const searchButton = document.getElementById("search-button");
 const movieResult = document.getElementById("movie-result");
 
-const API_KEY = "d5f1e3ade2ee82bda60fcf040d4cdbc5";
+const API_KEY = "YOUR_API_KEY";
 
 searchButton.addEventListener("click", searchMovies);
 
