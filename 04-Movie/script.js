@@ -62,14 +62,37 @@ async function getMovies(query) {
 function createMovieCard(movie) {
     const movieCard = document.createElement("div");
     
-    const posterUrl = `https://image.tmdb.org/t/p/w500${movie.poster_path}`;
+    let posterHtml;
+    
+    if (movie.poster_path) {
+        const posterUrl = `https://image.tmdb.org/t/p/w500${movie.poster_path}`;
+        
+        posterHtml = `
+        <img src= "${posterUrl} alt= "${movie.title}}">
+        `;
+    } else {
+        posterUrl = `
+            <div class="no-poster">포스터 없음</div>
+        `;
+    }
+    
+    const stars = getStars(movie.vote_average);
 
     movieCard.innerHTML = `
-        <h2>${movie.title}</h2>
-        <img src= "${posterUrl} alt= "${movie.title}}">    
-        <p>${movie.release_date}</p>
-        <p>평점: ${movie.vote_average}</p>
+        ${posterHtml}
+        <h2>${movie.title}</h2>    
+        <p>📅${movie.release_date || "개봉일 정보 없음"}</p>
+        <p>${stars} ${movie.vote_average || "평점 정보 없음"}</p>
     `;
 
     return movieCard;
+}
+
+function getStars(voteAverage) {
+    const score = Math.round(voteAverage / 2);
+
+    const filledStars = "⭐".repeat(score);
+    const emptyStars = "☆".repeat(5 - score);
+
+    return filledStars + emptyStars;
 }
