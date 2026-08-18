@@ -16,24 +16,32 @@ async function searchMovies() {
     const query = movieInput.value.trim();
 
     if (query === "") {
-        movieResult.innerHTML = "<p>영화 제목을 입력해주세요.</p>";
+        showMessage("영화 제목을 입력해주세요.");
         return;
     }
 
-    movieResult.innerHTML = "<p>검색 중...</p>";
+    showMessage("검색 중...");
 
     const data = await getMovies(query);
 
     if (data === null) {
-        movieResult.innerHTML = "<p>영화 정보를 가져오지 못했습니다.</p>";
+        showMessage("영화 정보를 가져오지 못했습니다.");
         return;
     }
 
     const movies = data.results;
+    displayMovies(movies);
+}
+
+function showMessage(message) {
+    movieResult.innerHTML = `<p>${message}</p>`;
+}
+
+function displayMovies(movies) {
     movieResult.innerHTML = "";
 
     if (movies.length === 0) {
-        movieResult.innerHTML = "<p>검색 결과가 없습니다.</p>";
+        showMessage("검색 결과가 없습니다.");
         return;
     }
 
@@ -44,49 +52,61 @@ async function searchMovies() {
 }
 
 async function getMovies(query) {
-    const url = `https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(query)}&language=ko-KR`;
+    try{
+        const url = `https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(query)}&language=ko-KR`;
     
-    const response = await fetch(url);
+        const response = await fetch(url);
 
-    console.log(response);
+        if (!response.ok) {
+            return null;
+        }
 
-    if (!response.ok) {
+        const data = await response.json();
+
+        return data;
+    } catch (error) {
         return null;
     }
-
-    const data = await response.json();
-
-    return data;
 }
 
 function createMovieCard(movie) {
     const movieCard = document.createElement("div");
     
-    let posterHtml;
-    
-    if (movie.poster_path) {
-        const posterUrl = `https://image.tmdb.org/t/p/w500${movie.poster_path}`;
-        
-        posterHtml = `
-        <img src= "${posterUrl} alt= "${movie.title}}">
-        `;
-    } else {
-        posterUrl = `
-            <div class="no-poster">포스터 없음</div>
-        `;
-    }
-    
+    const posterHtml = getPosterHtml(movie);
+
     const stars = getStars(movie.vote_average);
 
     movieCard.innerHTML = `
         ${posterHtml}
         <h2>${movie.title}</h2>    
         <p>📅${movie.release_date || "개봉일 정보 없음"}</p>
-        <p>${stars} ${movie.vote_average || "평점 정보 없음"}</p>
+        <p>${stars} ${movie.vote_average > 0 ? movie.vote_average : "평점 정보 없음"}</p>
     `;
+
+    movieCard.addEventListener("click", function() {
+    const url = `https://www.themoviedb.org/movie/${movie.id}`;
+    window.open(url, "_blank");
+});
 
     return movieCard;
 }
+
+function getPosterHtml(movie) {
+    if (movie.poster_path) {
+        return `
+            <img 
+            src= "https://image.tmdb.org/t/p/w500${movie.poster_path}" 
+            alt= "${movie.title}}">
+        
+
+        `;
+    }
+
+    return `
+        <div class="no-poster">포스터 없음</div>
+    `
+}
+
 
 function getStars(voteAverage) {
     const score = Math.round(voteAverage / 2);
@@ -96,3 +116,4 @@ function getStars(voteAverage) {
 
     return filledStars + emptyStars;
 }
+

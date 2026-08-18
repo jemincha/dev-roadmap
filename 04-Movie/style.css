@@ -6,13 +6,15 @@ body {
     margin: 0;
     padding: 40px 20px;
     font-family: Arial, sans-serif;
-    background-color: #f5f5f5;
-    color: #222;
+    background-color: #f2f5f4;
+    color: #2f3a38;
 }
 
+/* 제목 */
 h1 {
-    margin-bottom: 30px;
+    margin: 0 0 30px;
     text-align: center;
+    color: #3f5f5a;
 }
 
 /* 검색 영역 */
@@ -23,27 +25,46 @@ h1 {
     max-width: 500px;
     margin: 0 auto 10px;
     padding: 12px 15px;
-    border: 1px solid #ccc;
+
+    border: 1px solid #c8d6d2;
     border-radius: 8px;
+
+    background-color: white;
+    color: #2f3a38;
+
     font-size: 16px;
+    outline: none;
 }
 
+#city-input:focus,
+#movie-input:focus {
+    border-color: #7fa9a2;
+    box-shadow: 0 0 0 3px rgba(127, 169, 162, 0.15);
+}
+
+/* 검색 버튼 */
 #search-button {
     display: block;
     width: 100%;
     max-width: 500px;
     margin: 0 auto 40px;
     padding: 12px;
+
     border: none;
     border-radius: 8px;
-    background-color: #222;
+
+    background-color: #6f9997;
     color: white;
+
     font-size: 16px;
     cursor: pointer;
+
+    transition: background-color 0.2s ease, transform 0.2s ease;
 }
 
 #search-button:hover {
-    opacity: 0.8;
+    background-color: #5f8885;
+    transform: translateY(-1px);
 }
 
 /* 영화 목록 */
@@ -60,15 +81,27 @@ h1 {
 /* 영화 카드 */
 #movie-result > div {
     overflow: hidden;
+
     background-color: white;
     border-radius: 10px;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+
+    box-shadow: 0 3px 10px rgba(63, 95, 90, 0.1);
+
+    cursor: pointer;
+
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+#movie-result > div:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 7px 18px rgba(63, 95, 90, 0.16);
 }
 
 /* 포스터 */
 #movie-result img {
     display: block;
     width: 100%;
+
     aspect-ratio: 2 / 3;
     object-fit: cover;
 }
@@ -80,8 +113,9 @@ h1 {
     margin-right: 15px;
 }
 
+/* 영화 제목 */
 #movie-result h2 {
-     margin: 15px 15px 10px;
+    margin: 15px 15px 10px;
     padding: 8px 10px;
 
     background-color: #6f9997;
@@ -93,9 +127,11 @@ h1 {
     line-height: 1.4;
 }
 
+/* 개봉일 / 평점 */
 #movie-result p {
     margin-bottom: 8px;
-    color: #666;
+
+    color: #687572;
     font-size: 14px;
 }
 
@@ -108,6 +144,18 @@ h1 {
     width: 100%;
     aspect-ratio: 2 / 3;
 
-    background-color: #ddd;
-    color: #777;
+    background-color: #dce5e2;
+    color: #71817d;
+
+    font-size: 14px;
+}
+
+/* 메시지 */
+#movie-result > p {
+    width: 100%;
+    margin: 20px auto;
+
+    color: #687572;
+    text-align: center;
+    font-size: 15px;
 }
