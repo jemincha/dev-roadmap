@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>누가 제일 허슬했나</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <header>
+        <h1>누가 제일 허슬했나</h1>
+        <p>아티스트의 발매 활동을 GitHub 잔디처럼 비교해보세요.</p>
+    </header>
+
+    <main>
+
+        <!-- 아티스트 검색 -->
+        <section class="search-section">
+            <form id="artist-search-form">
+                <label for="artist-input">아티스트 검색</label>
+
+                <div class="search-container">
+                    <input
+                        type="text"
+                        id="artist-input"
+                        placeholder="아티스트 이름을 입력하세요"
+                        autocomplete="off"
+                    >
+
+                    <button type="submit" id="search-button">
+                        검색
+                    </button>
+
+                    <!-- 검색 결과 드롭다운 -->
+                    <div id="search-dropdown" class="search-dropdown"></div>
+                </div>
+            </form>
+        </section>
+
+
+        <!-- 대시보드 -->
+        <section class="dashboard">
+
+            <!-- 아티스트 그래프 -->
+            <section id="artist-graphs" class="artist-graphs">
+
+                <!-- JavaScript로 아티스트 그래프를 생성 -->
+
+            </section>
+
+
+            <!-- 선택한 분기의 상세 정보 -->
+            <aside id="detail-panel" class="detail-panel">
+
+                <header class="detail-header">
+                    <h2 id="detail-title">분기를 선택해주세요</h2>
+
+                    <button
+                        type="button"
+                        id="close-detail-button"
+                        aria-label="상세 정보 닫기"
+                    >
+                        ×
+                    </button>
+                </header>
+
+                <!-- 선택한 분기의 앨범 목록 -->
+                <div id="album-list" class="album-list">
+
+                    <p class="detail-placeholder">
+                        그래프의 분기를 클릭하면
+                        해당 기간에 발매된 앨범을 확인할 수 있습니다.
+                    </p>
+
+                </div>
+
+            </aside>
+
+        </section>
+
+    </main>
+
+    <script src="script.js"></script>
+
+</body>
+</html>

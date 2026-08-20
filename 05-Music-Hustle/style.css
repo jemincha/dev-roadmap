@@ -1,0 +1,511 @@
+/* ========================================
+   Design tokens
+   GitHub의 contribution graph / 카드 UI에서
+   쓰이는 색상 값을 참고해 구성했다.
+   (GitHub의 마크업이나 CSS를 그대로 복제한 것이 아니라
+   개념과 색상 팔레트만 참고한 독자적인 스타일시트)
+   ======================================== */
+
+:root {
+
+    /* 배경 / 텍스트 */
+    --color-bg: #ffffff;
+    --color-bg-subtle: #f6f8fa;
+    --color-border: #d0d7de;
+    --color-border-muted: #d8dee4;
+
+    --color-text: #1f2328;
+    --color-text-muted: #656d76;
+    --color-text-subtle: #8c959f;
+
+    --color-accent: #0969da;
+    --color-danger: #cf222e;
+    --color-danger-bg: #fff1f0;
+
+    /* GitHub contribution graph 5단계 색상 */
+    --level-0: #ebedf0;
+    --level-1: #9be9a8;
+    --level-2: #40c463;
+    --level-3: #30a14e;
+    --level-4: #216e39;
+
+    /* 셀 크기 */
+    --cell-size: 14px;
+    --cell-gap: 3px;
+
+    --radius-sm: 4px;
+    --radius-md: 6px;
+
+    --font-sans:
+        -apple-system, BlinkMacSystemFont, "Segoe UI",
+        "Noto Sans KR", Helvetica, Arial, sans-serif;
+
+    --font-mono:
+        ui-monospace, "SFMono-Regular", "SF Mono",
+        Menlo, Consolas, monospace;
+}
+
+
+/* ========================================
+   Reset / base
+   ======================================== */
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: var(--color-bg-subtle);
+    color: var(--color-text);
+    font-family: var(--font-sans);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+}
+
+button {
+    font-family: inherit;
+}
+
+:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+}
+
+
+/* ========================================
+   Header
+   ======================================== */
+
+header {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 40px 24px 8px;
+    text-align: center;
+}
+
+header h1 {
+    margin: 0 0 6px;
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+header p {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: 14px;
+}
+
+
+/* ========================================
+   Main / layout
+   ======================================== */
+
+main {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 24px;
+}
+
+
+/* ========================================
+   검색
+   ======================================== */
+
+.search-section {
+    margin-bottom: 24px;
+}
+
+.search-section label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    margin-bottom: 6px;
+}
+
+.search-container {
+    position: relative;
+    display: flex;
+    gap: 8px;
+}
+
+#artist-input {
+    flex: 1;
+    padding: 10px 12px;
+    font-size: 14px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-bg);
+    color: var(--color-text);
+}
+
+#artist-input:focus {
+    border-color: var(--color-accent);
+}
+
+#search-button {
+    padding: 0 16px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff;
+    background: var(--color-accent);
+    border: 1px solid var(--color-accent);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+}
+
+#search-button:hover {
+    filter: brightness(0.92);
+}
+
+.search-dropdown {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 84px;
+    z-index: 20;
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: 0 8px 24px rgba(140, 149, 159, 0.2);
+    overflow: hidden;
+}
+
+.search-dropdown:empty {
+    border: none;
+    box-shadow: none;
+}
+
+.search-result {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    width: 100%;
+    padding: 10px 14px;
+    background: none;
+    border: none;
+    border-bottom: 1px solid var(--color-border-muted);
+    text-align: left;
+    cursor: pointer;
+}
+
+.search-result:last-child {
+    border-bottom: none;
+}
+
+.search-result:hover,
+.search-result:focus-visible {
+    background: var(--color-bg-subtle);
+}
+
+.search-result strong {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.search-result span {
+    font-size: 12px;
+    color: var(--color-text-muted);
+}
+
+.search-empty,
+.search-error {
+    margin: 0;
+    padding: 14px;
+    font-size: 13px;
+    color: var(--color-text-muted);
+}
+
+.search-error {
+    color: var(--color-danger);
+}
+
+
+/* ========================================
+   대시보드
+   ======================================== */
+
+.dashboard {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 20px;
+    align-items: start;
+}
+
+@media (max-width: 780px) {
+
+    .dashboard {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+
+/* ========================================
+   아티스트 그래프 목록
+   ======================================== */
+
+.artist-graphs {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-width: 0;
+}
+
+.empty-state {
+    margin: 0;
+    padding: 40px 20px;
+    text-align: center;
+    color: var(--color-text-subtle);
+    font-size: 14px;
+    background: var(--color-bg);
+    border: 1px dashed var(--color-border);
+    border-radius: var(--radius-md);
+}
+
+.artist-chart {
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 16px 18px 18px;
+}
+
+.artist-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.artist-info {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.artist-info h2 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.artist-info span {
+    font-size: 12px;
+    color: var(--color-text-muted);
+}
+
+.remove-artist-button {
+    width: 26px;
+    height: 26px;
+    line-height: 1;
+    font-size: 16px;
+    color: var(--color-text-muted);
+    background: none;
+    border: 1px solid var(--color-border);
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.remove-artist-button:hover {
+    color: var(--color-danger);
+    border-color: var(--color-danger);
+}
+
+
+/* ========================================
+   앨범 조회 실패 상태
+   ======================================== */
+
+.artist-load-error {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 14px;
+    background: var(--color-danger-bg);
+    border: 1px solid #ffd7d5;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    color: var(--color-danger);
+}
+
+.artist-load-error p {
+    margin: 0;
+}
+
+.retry-artist-button {
+    flex-shrink: 0;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--color-danger);
+    background: #fff;
+    border: 1px solid var(--color-danger);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+}
+
+.retry-artist-button:hover {
+    background: var(--color-danger);
+    color: #fff;
+}
+
+
+/* ========================================
+   Contribution Graph
+   연도(가로) × 분기(세로) 구조.
+   ======================================== */
+
+.contribution-graph {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+}
+
+.year-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.year-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--color-text-subtle);
+    font-variant-numeric: tabular-nums;
+}
+
+.quarter-stack {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cell-gap);
+}
+
+.quarter-cell {
+    width: var(--cell-size);
+    height: var(--cell-size);
+    padding: 0;
+    border-radius: 3px;
+    border: 1px solid rgba(27, 31, 36, 0.06);
+    background-color: var(--level-0);
+    cursor: pointer;
+    transition: outline-color 0.1s ease;
+}
+
+.quarter-cell:hover:not(:disabled) {
+    outline: 2px solid var(--color-text);
+    outline-offset: -1px;
+}
+
+.quarter-cell.level-0 { background-color: var(--level-0); }
+.quarter-cell.level-1 { background-color: var(--level-1); }
+.quarter-cell.level-2 { background-color: var(--level-2); }
+.quarter-cell.level-3 { background-color: var(--level-3); }
+.quarter-cell.level-4 { background-color: var(--level-4); }
+
+/* 데뷔 이전 구간 — level-0과 시각적으로 구분되는 "빈 공간" */
+.quarter-cell.no-data {
+    background-color: transparent;
+    border: 1px dashed var(--color-border-muted);
+    cursor: default;
+}
+
+
+/* ========================================
+   상세 패널
+   ======================================== */
+
+.detail-panel {
+    position: sticky;
+    top: 24px;
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 16px 18px;
+    min-height: 160px;
+}
+
+.detail-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.detail-header h2 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.detail-panel.active .detail-header h2 {
+    color: var(--color-text);
+}
+
+#close-detail-button {
+    width: 24px;
+    height: 24px;
+    line-height: 1;
+    font-size: 15px;
+    color: var(--color-text-muted);
+    background: none;
+    border: 1px solid var(--color-border);
+    border-radius: 50%;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+#close-detail-button:hover {
+    color: var(--color-text);
+    border-color: var(--color-text-muted);
+}
+
+.detail-placeholder {
+    margin: 0;
+    font-size: 13px;
+    color: var(--color-text-subtle);
+    line-height: 1.6;
+}
+
+.album-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.album-card {
+    padding: 10px 12px;
+    background: var(--color-bg-subtle);
+    border-radius: var(--radius-sm);
+}
+
+.album-card h3 {
+    margin: 0 0 4px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.album-card p {
+    margin: 0;
+    font-size: 12px;
+    color: var(--color-text-muted);
+}
+
+.album-card p:last-child {
+    margin-top: 2px;
+    display: inline-block;
+    padding: 1px 6px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--color-accent);
+    background: #ddf4ff;
+    border-radius: 999px;
+}
