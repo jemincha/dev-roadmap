@@ -48,6 +48,12 @@ let graphStartYear = null;
 // 현재 연도
 const currentYear = new Date().getFullYear();
 
+// 현재 분기(1~4).
+// totalQuarters를 계산할 때 아직 오지 않은 미래 분기까지
+// "활동 가능 분기"로 잘못 세지 않기 위해 사용한다.
+const currentQuarter =
+    Math.floor(new Date().getMonth() / 3) + 1;
+
 
 // ========================================
 // 에러 처리
@@ -178,10 +184,20 @@ async function getArtistAlbums(artistId) {
 
     do {
 
+        // type에 single을 추가해 싱글 발매까지 포함한다.
+        // (album|ep만 쓰면 싱글 중심으로 활동하는 아티스트가
+        //  구조적으로 항상 활동이 적어 보이는 문제가 있었다.)
+        //
+        // 평점(inc=ratings)은 실제로 붙여서 테스트해본 결과
+        // MusicBrainz 자체의 평점 데이터가 대부분의 아티스트에게
+        // 거의 채워져 있지 않아(특히 최근 데뷔 아티스트) 지금 단계의
+        // 지표로 쓰기엔 신뢰도가 너무 낮아 제외했다.
+        // 나중에 다시 시도하려면 이 URL에 `&inc=ratings`를 추가하고
+        // analyzeArtist()에 quality 필드를 다시 계산하면 된다.
         const url =
             `${MUSICBRAINZ_BASE_URL}/release-group/` +
             `?artist=${artistId}` +
-            `&type=album|ep` +
+            `&type=album|ep|single` +
             `&fmt=json` +
             `&limit=${limit}` +
             `&offset=${offset}`;
@@ -608,6 +624,216 @@ function groupAlbumsByQuarter(albums) {
 
 
 // ========================================
+// 데이터 분석 (Hustle Score - Phase 5-1)
+// ========================================
+//
+// 아티스트 한 명의 활동 데이터를 분석한다.
+//
+// 원래는 Output(발매 밀도) 옆에 Quality(평점)도 별개 지표로
+// 두려고 했으나, 실제로 MusicBrainz 평점을 붙여서 테스트해보니
+// 대부분의 아티스트(특히 최근 데뷔)에게 평점 데이터 자체가
+// 거의 없어 지표로 쓰기엔 신뢰도가 너무 낮았다. 그래서 MVP에서는
+// "얼마나 좋은 작품을 냈는가"는 다루지 않고 "얼마나 열심히,
+// 꾸준히 냈는가"에만 집중한다. 평점 데이터를 나중에 다른 소스
+// (예: Spotify)로 보강하게 되면 quality 필드를 다시 추가하면 된다.
+//
+// totalQuarters는 전체 그래프의 공유 시간축(graphStartYear)이 아니라
+// 아티스트 자신의 활동 기간(debutYear ~ 현재)만 기준으로 삼는다.
+// 공유 시간축을 쓰면 늦게 데뷔한 아티스트는 활동하지도 않은
+// no-data 구간까지 분모에 끼어들어 불리해지기 때문이다.
+
+// 트랙 수 데이터를 API에서 가져올 수 없는 현재 범위에서는,
+// 발매 형식(Album > EP > Single)을 "작업 규모"의 근사치로 사용해
+// 가중치를 둔다. 나중에 트랙 수 같은 더 정확한 데이터를 확보하면
+// 이 가중치를 그 값으로 교체하면 된다.
+const RELEASE_TYPE_WEIGHT = {
+    Album: 3,
+    EP: 2,
+    Single: 1
+};
+
+const DEFAULT_RELEASE_WEIGHT = 1;
+
+function getReleaseWeight(album) {
+
+    const primaryType = album["primary-type"];
+
+    return RELEASE_TYPE_WEIGHT[primaryType] ?? DEFAULT_RELEASE_WEIGHT;
+}
+
+
+function analyzeArtist(artist) {
+
+    // 아직 오지 않은 미래 분기는 "활동 가능 분기"에서 제외한다.
+    const totalQuarters =
+        (currentYear - artist.debutYear) * 4 + currentQuarter;
+
+
+    const groupedAlbums =
+        groupAlbumsByQuarter(artist.albums);
+
+    const activeQuarters =
+        Object.keys(groupedAlbums).length;
+
+    const totalAlbums =
+        artist.albums.length;
+
+    // 앨범/EP/싱글 개수를 그대로 더하지 않고
+    // getReleaseWeight()로 가중치를 매겨서 합산한다.
+    const weightedTotal =
+        artist.albums.reduce(function(sum, album) {
+
+            return sum + getReleaseWeight(album);
+
+        }, 0);
+
+
+    const consistency =
+        totalQuarters > 0
+            ? activeQuarters / totalQuarters
+            : 0;
+
+    // Output: 활동 기간 대비 "가중 발매 밀도".
+    // (단순 발매 건수가 아니라 Album/EP/Single 가중치를 반영한 값)
+    const output =
+        totalQuarters > 0
+            ? weightedTotal / totalQuarters
+            : 0;
+
+
+    return {
+        totalAlbums,
+        weightedTotal,
+        activeQuarters,
+        totalQuarters,
+        consistency,
+        output
+    };
+}
+
+
+// ========================================
+// 아티스트 비교 (Hustle Score - Phase 5-2)
+// ========================================
+//
+// Hustle Score = 가중 발매 밀도(output) × 꾸준함(consistency)
+//
+// 이 값 자체는 아주 작은 소수(예: 0.05)라 그대로는 비교하기 어렵다.
+// 그래서 "지금 비교 중인 아티스트들 중 최고값"을 100으로 놓고
+// 상대적으로 정규화한다.
+//
+// 주의: 이 점수는 절대적인 척도가 아니라
+// "현재 선택된 아티스트들 사이의 상대 비교" 값이다.
+// 비교 대상 아티스트가 추가/제거되면 다른 아티스트의 점수도 바뀐다.
+function compareArtists(artists) {
+
+    const analyzableArtists =
+        artists.filter(function(artist) {
+
+            return !artist.loadFailed;
+
+        });
+
+
+    if (analyzableArtists.length === 0) {
+        return [];
+    }
+
+
+    const withRawScore =
+        analyzableArtists.map(function(artist) {
+
+            const analysis = analyzeArtist(artist);
+
+            const rawScore =
+                analysis.output * analysis.consistency;
+
+            return {
+                id: artist.id,
+                name: artist.name,
+                totalAlbums: analysis.totalAlbums,
+                weightedTotal: analysis.weightedTotal,
+                activeQuarters: analysis.activeQuarters,
+                totalQuarters: analysis.totalQuarters,
+                consistency: analysis.consistency,
+                output: analysis.output,
+                rawScore: rawScore
+            };
+
+        });
+
+
+    const maxRawScore =
+        Math.max(
+            ...withRawScore.map(function(entry) {
+                return entry.rawScore;
+            })
+        );
+
+
+    const results =
+        withRawScore.map(function(entry) {
+
+            const hustleScore =
+                maxRawScore > 0
+                    ? Math.round((entry.rawScore / maxRawScore) * 100)
+                    : 0;
+
+            return {
+                ...entry,
+                hustleScore
+            };
+
+        });
+
+
+    // Hustle Score 내림차순 정렬
+    results.sort(function(a, b) {
+
+        return b.hustleScore - a.hustleScore;
+
+    });
+
+
+    return results;
+}
+
+
+// 지금은 비교 UI(Phase 5-3) 이전 단계라,
+// 실제 데이터가 말이 되는지 콘솔에서 바로 확인할 수 있도록
+// 아티스트 목록이 바뀔 때마다 순위표로 찍어준다.
+function logHustleAnalysis() {
+
+    const ranking =
+        compareArtists(selectedArtists);
+
+    if (ranking.length === 0) {
+        return;
+    }
+
+
+    const rows =
+        ranking.map(function(entry, index) {
+
+            return {
+                "순위": index + 1,
+                "아티스트": entry.name,
+                "Hustle Score": entry.hustleScore,
+                "가중 발매 점수": entry.weightedTotal,
+                "총 발매(앨범/EP/싱글)": entry.totalAlbums,
+                "활동 분기": `${entry.activeQuarters} / ${entry.totalQuarters}`,
+                "Consistency": entry.consistency.toFixed(2),
+                "Output(가중 밀도)": entry.output.toFixed(3)
+            };
+
+        });
+
+
+    console.table(rows);
+}
+
+
+// ========================================
 // 이벤트
 // ========================================
 
@@ -741,6 +967,12 @@ function renderArtistGraphs() {
         artistGraphs.appendChild(artistChart);
 
     });
+
+
+    // Phase 5-1: 아직 비교 UI는 없지만,
+    // 분석 함수가 만들어내는 실제 데이터를 바로 확인할 수 있도록
+    // 렌더링할 때마다 콘솔에 표로 출력한다.
+    logHustleAnalysis();
 }
 
 
@@ -1308,6 +1540,13 @@ function getReleaseTypeLabel(album) {
     if (primaryType === "EP") {
 
         return "EP";
+
+    }
+
+
+    if (primaryType === "Single") {
+
+        return "Single";
 
     }
 
