@@ -243,6 +243,18 @@ main {
 
 }
 
+/* 모바일 터치 접근성: 14px 셀은 터치 타겟으로 너무 작다.
+   완전한 44px 권장치까지는 아니어도(그래프가 너무 넓어짐),
+   실제로 탭하기 편한 수준까지는 키운다. */
+@media (max-width: 480px) {
+
+    :root {
+        --cell-size: 22px;
+        --cell-gap: 5px;
+    }
+
+}
+
 
 /* ========================================
    아티스트 그래프 목록
@@ -430,6 +442,15 @@ main {
     border-radius: var(--radius-md);
     padding: 16px 18px;
     min-height: 160px;
+    /* 카드 목록과 명확히 분리된 별도 패널로 보이도록 그림자를 준다. */
+    box-shadow: 0 4px 16px rgba(31, 35, 40, 0.06);
+}
+
+/* 실제로 분기 정보가 열려 있을 때는 테두리를 강조해서
+   "지금 이 패널에 정보가 떠 있다"는 걸 눈에 띄게 한다. */
+.detail-panel.active {
+    border-color: var(--color-accent);
+    box-shadow: 0 6px 20px rgba(9, 105, 218, 0.12);
 }
 
 .detail-header {
@@ -482,9 +503,67 @@ main {
 }
 
 .album-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
     padding: 10px 12px;
     background: var(--color-bg-subtle);
     border-radius: var(--radius-sm);
+}
+
+/* ========================================
+   앨범 썸네일 (Cover Art Archive)
+   ======================================== */
+
+.album-thumbnail {
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    border-radius: 4px;
+    overflow: hidden;
+    background: var(--color-border-muted);
+}
+
+.album-thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.album-thumbnail-placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        var(--color-border-muted) 25%,
+        var(--color-bg-subtle) 50%,
+        var(--color-border-muted) 75%
+    );
+    background-size: 200% 100%;
+    animation: thumbnail-shimmer 1.2s ease-in-out infinite;
+}
+
+@keyframes thumbnail-shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* 커버 아트가 아예 없는 release-group일 때 (404) */
+.album-thumbnail.no-thumbnail {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.album-thumbnail.no-thumbnail::after {
+    content: "♪";
+    color: var(--color-text-subtle);
+    font-size: 16px;
+}
+
+.album-info {
+    min-width: 0;
 }
 
 .album-card h3 {
@@ -508,4 +587,239 @@ main {
     color: var(--color-accent);
     background: #ddf4ff;
     border-radius: 999px;
+}
+
+
+/* ========================================
+   Hustle Ranking (Phase 5-3)
+   ======================================== */
+
+.hustle-ranking {
+    display: none;
+    margin-top: 20px;
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 18px 20px 20px;
+}
+
+.hustle-ranking.active {
+    display: block;
+}
+
+.hustle-ranking-header {
+    margin-bottom: 14px;
+}
+
+.hustle-ranking-header h2 {
+    margin: 0 0 4px;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.hustle-ranking-note {
+    margin: 0;
+    font-size: 12px;
+    color: var(--color-text-muted);
+}
+
+.hustle-ranking-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.hustle-ranking-item {
+    padding: 12px 14px;
+    background: var(--color-bg-subtle);
+    border-radius: var(--radius-sm);
+}
+
+.hustle-ranking-top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.hustle-ranking-artist {
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.hustle-ranking-score {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--level-4);
+    font-variant-numeric: tabular-nums;
+}
+
+.hustle-bar-row {
+    display: grid;
+    grid-template-columns: 76px 1fr 28px;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.hustle-bar-label {
+    font-size: 11px;
+    color: var(--color-text-muted);
+}
+
+.hustle-bar-track {
+    height: 6px;
+    border-radius: 999px;
+    background: var(--color-border-muted);
+    overflow: hidden;
+}
+
+.hustle-bar-fill {
+    height: 100%;
+    border-radius: 999px;
+}
+
+.hustle-bar-fill.output {
+    background: var(--level-3);
+}
+
+.hustle-bar-fill.consistency {
+    background: var(--color-accent);
+}
+
+.hustle-bar-value {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ========================================
+   로딩 상태
+   ======================================== */
+
+.artist-loading {
+    padding: 24px 16px;
+    text-align: center;
+}
+
+.artist-loading-bar {
+    height: 6px;
+    max-width: 220px;
+    margin: 0 auto 10px;
+    border-radius: 999px;
+    background: linear-gradient(
+        90deg,
+        var(--color-border-muted) 25%,
+        var(--color-bg-subtle) 50%,
+        var(--color-border-muted) 75%
+    );
+    background-size: 200% 100%;
+    animation: thumbnail-shimmer 1.2s ease-in-out infinite;
+}
+
+.artist-loading-text {
+    margin: 0;
+    font-size: 13px;
+    color: var(--color-text-subtle);
+}
+
+
+/* ========================================
+   라이선스 고지 (Footer)
+   ======================================== */
+
+.attribution-footer {
+    max-width: 960px;
+    margin: 32px auto 24px;
+    padding: 16px 24px 0;
+    border-top: 1px solid var(--color-border);
+    text-align: center;
+}
+
+.attribution-footer p {
+    margin: 0 0 4px;
+    font-size: 12px;
+    color: var(--color-text-subtle);
+}
+
+.attribution-footer a {
+    color: var(--color-text-muted);
+    text-decoration: underline;
+}
+
+.attribution-footer a:hover {
+    color: var(--color-accent);
+}
+
+/* ========================================
+   온보딩 프리셋
+   ======================================== */
+
+.onboarding {
+    padding: 40px 20px;
+    text-align: center;
+    background: var(--color-bg);
+    border: 1px dashed var(--color-border);
+    border-radius: var(--radius-md);
+}
+
+.onboarding-label {
+    margin: 12px 0 10px;
+    font-size: 13px;
+    color: var(--color-text-subtle);
+}
+
+.onboarding-chips {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+}
+
+.onboarding-chip {
+    padding: 6px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-accent);
+    background: #ddf4ff;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    cursor: pointer;
+}
+
+.onboarding-chip:hover {
+    border-color: var(--color-accent);
+}
+
+
+/* ========================================
+   Hustle Ranking 헤더 - 이미지 export 버튼
+   ======================================== */
+
+.hustle-ranking-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.export-ranking-button {
+    padding: 5px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    background: var(--color-bg-subtle);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+}
+
+.export-ranking-button:hover {
+    color: var(--color-accent);
+    border-color: var(--color-accent);
 }
